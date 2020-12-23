@@ -35,17 +35,42 @@
   Optionally, a custom hash function can be provided as last argument (`hash-fn`).
   This funtion should accept a single argument and return hash of that argument."
   [n objects & [hash-fn]]
-  (reduce (fn [acc object]
-            (let [hash-fn (or hash-fn generate-hash)
-                  object-hash (-> object
-                                  hash-fn
-                                  (mod n))]
-              (update acc
-                      object-hash
-                      (fnil conj [])
-                      object)))
-          {}
-          objects))
+  (let [hash-fn (or hash-fn generate-hash)]
+    (reduce (fn [acc object]
+              (let [object-hash (-> object hash-fn (mod n))]
+                (update acc
+                        object-hash
+                        (fnil conj [])
+                        object)))
+            {}
+            objects)))
+
+
+(defn get-consistent-hashes
+  [nodes objects & [hash-fn]]
+  (let [hash-fn (or hash-fn generate-hash)
+        server-hashes (-> #(hash-fn (:name %))
+                          (map nodes)
+                          sort)
+        hash->node (reduce (fn [acc node]
+                             (assoc acc
+                                    (hash (:name node))
+                                    (:name node)))
+                           {}
+                           nodes)]
+    (reduce (fn [acc object]
+              (let [object-hash (hash-fn object)
+                    closest-server-hash (or (-> #(< % object-hash)
+                                                (take-while server-hashes)
+                                                last)
+                                            (last server-hashes))
+                    closest-server-node (hash->node closest-server-hash)]
+                (update acc
+                        closest-server-node
+                        (fnil conj [])
+                        object)))
+            {}
+            objects)))
 
 
 (def mod-hashes (get-mod-n-hashes (count cache-nodes) objects))

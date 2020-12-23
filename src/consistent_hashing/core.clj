@@ -83,12 +83,11 @@
     (println separator)))
 
 
-(defn print-state
+(defn mod-n-hashing-print-state
   "Prints the state of the cache for `cache-nodes` and `objects`."
   [cache-nodes objects]
   (let [nodes-count (count cache-nodes)
-        mod-hashes (get-mod-n-hashes nodes-count
-                                     objects)]
+        mod-hashes (get-mod-n-hashes nodes-count objects)]
     (print-line-separator)
     (println (format "With %s nodes:" nodes-count))
     (pp/pprint (into (sorted-map) mod-hashes))
@@ -96,22 +95,64 @@
     (println "\n")))
 
 
+(defn consistent-hashing-print-state
+  "Prints the state of the cache for `cache-nodes` and `objects`."
+  [cache-nodes objects]
+  (let [nodes-count (count cache-nodes)
+        mod-hashes (get-consistent-hashes cache-nodes objects)]
+    (print-line-separator)
+    (println (format "With %s nodes:" nodes-count))
+    (pp/pprint (into (sorted-map) mod-hashes))
+    (print-line-separator)
+    (println "\n")))
+
+
+(defn mod-n-hashing-demo
+  []
+  (println "Initial state")
+  (mod-n-hashing-print-state cache-nodes objects-small)
+
+  (println "Add one node")
+  (mod-n-hashing-print-state (conj cache-nodes
+                                   {:name "node-3"
+                                    :host "localhost"
+                                    :port 6003})
+                             objects-small)
+
+  (println "Initial state")
+  (mod-n-hashing-print-state cache-nodes objects-small)
+
+  (println "Remove a node")
+  (mod-n-hashing-print-state (drop-last cache-nodes)
+                             objects-small))
+
+
+(defn consistent-hashing-demo
+  []
+  (println "Initial state")
+  (consistent-hashing-print-state cache-nodes objects-small)
+
+  (println "Add one node")
+  (consistent-hashing-print-state (conj cache-nodes
+                                        {:name "node-3"
+                                         :host "localhost"
+                                         :port 6003})
+                                  objects-small)
+
+  (println "Initial state")
+  (consistent-hashing-print-state cache-nodes objects-small)
+
+  (println "Remove a node")
+  (consistent-hashing-print-state (drop-last cache-nodes)
+                                  objects-small))
+
+
 (defn -main
   "Demo different caching strategies"
   [& _]
-  (println "Initial state")
-  (print-state cache-nodes objects-small)
-
-  (println "Add one node")
-  (print-state (conj cache-nodes
-                     {:name "node-3"
-                      :host "localhost"
-                      :port 6003})
-               objects-small)
-
-  (println "Initial state")
-  (print-state cache-nodes objects-small)
-
-  (println "Remove a node")
-  (print-state (drop-last cache-nodes)
-               objects-small))
+  (println "Mod N hashing demo:")
+  (print-line-separator)
+  (mod-n-hashing-demo)
+  (println "Consistent hashing demo:")
+  (print-line-separator)
+  (consistent-hashing-demo))

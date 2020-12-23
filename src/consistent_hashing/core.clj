@@ -1,6 +1,7 @@
 (ns consistent-hashing.core
   (:gen-class)
-  (:require [clojure.pprint :as pp]))
+  (:require [clojure.pprint :as pp]
+            [clojure.string :as cs]))
 
 
 (def objects ["A" "B" "C" "D" "E" "F" "G"
@@ -76,9 +77,10 @@
 (def mod-hashes (get-mod-n-hashes (count cache-nodes) objects))
 
 
-(defn print-line-separator
-  []
-  (println "────────────────────────────────────────────────────────────"))
+(let [separator (-> 60 (repeat "─") cs/join)]
+  (defn print-line-separator
+    []
+    (println separator)))
 
 
 (defn print-state

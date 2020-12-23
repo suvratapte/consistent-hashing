@@ -31,11 +31,14 @@
 
 
 (defn get-mod-n-hashes
-  "Returns hashes for `objects`."
-  [n objects]
+  "Returns mod `n` hashes for `objects`.
+  Optionally, a custom hash function can be provided as last argument (`hash-fn`).
+  This funtion should accept a single argument and return hash of that argument."
+  [n objects & [hash-fn]]
   (reduce (fn [acc object]
-            (let [object-hash (-> object
-                                  generate-hash
+            (let [hash-fn (or hash-fn generate-hash)
+                  object-hash (-> object
+                                  hash-fn
                                   (mod n))]
               (update acc
                       object-hash

@@ -77,7 +77,7 @@
 (def mod-hashes (get-mod-n-hashes (count cache-nodes) objects))
 
 
-(let [separator (-> 60 (repeat "─") cs/join)]
+(let [separator (->> "─" (repeat 60) cs/join)]
   (defn print-line-separator
     []
     (println separator)))

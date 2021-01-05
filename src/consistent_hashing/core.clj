@@ -63,18 +63,10 @@
   Returns a ring data structure (see doc string of `create-ring`).
   "
   [ring-state node & [hash-fn]]
-  (let [hash-fn (or hash-fn hash)
-        current-nodes (-> ring-state :hash->node vals)
-        new-nodes (-> current-nodes (conj node) set)
-        node-hashes (->> new-nodes
-                         (map hash-fn)
-                         sort)
-        hash->node (reduce (fn [acc node]
-                             (assoc acc (hash node) node))
-                           {}
-                           new-nodes)]
-    {:node-hashes node-hashes
-     :hash->node hash->node}))
+  (let [current-nodes (-> ring-state :hash->node vals)]
+    (-> current-nodes
+        (conj node)
+        (create-ring (or hash-fn hash)))))
 
 
 (defn remove-node
@@ -95,18 +87,10 @@
   Returns a ring data structure (see doc string of `create-ring`).
   "
   [ring-state node & [hash-fn]]
-  (let [hash-fn (or hash-fn hash)
-        current-nodes (-> ring-state :hash->node vals set)
-        new-nodes (disj current-nodes node)
-        node-hashes (->> new-nodes
-                         (map hash-fn)
-                         sort)
-        hash->node (reduce (fn [acc node]
-                             (assoc acc (hash node) node))
-                           {}
-                           new-nodes)]
-    {:node-hashes node-hashes
-     :hash->node hash->node}))
+  (let [current-nodes (-> ring-state :hash->node vals)]
+    (-> current-nodes
+        (remove #(= node %))
+        (create-ring (or hash-fn hash)))))
 
 
 (defn get-node
